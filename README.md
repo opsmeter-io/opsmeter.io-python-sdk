@@ -3,6 +3,9 @@
 Python SDK preview for Opsmeter auto-instrumentation.
 Package publishing: coming soon
 Integration examples: [opsmeter-integration-examples](https://github.com/opsmeter/opsmeter-integration-examples)
+Opsmeter site: [https://opsmeter.io](https://opsmeter.io)
+
+Use this SDK for **LLM cost tracking**, **OpenAI usage monitoring**, **Anthropic usage telemetry**, and **no-proxy AI observability** in Python.
 
 Provider/model names should come from: [https://opsmeter.io/docs/catalog](https://opsmeter.io/docs/catalog)
 Current SDK provider support: **OpenAI** and **Anthropic** only.
