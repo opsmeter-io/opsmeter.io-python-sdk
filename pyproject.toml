@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "opsmeter-sdk"
+version = "0.1.0b1"
+description = "Opsmeter Python SDK preview: one-time init + request context auto-instrumentation"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [{ name = "Opsmeter" }]
+keywords = ["opsmeter", "llm", "observability", "cost-tracking", "openai"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: OS Independent"
+]
+
+[project.urls]
+Homepage = "https://github.com/opsmeter/opsmeter-python-sdk"
+Repository = "https://github.com/opsmeter/opsmeter-python-sdk"
+Issues = "https://github.com/opsmeter/opsmeter-python-sdk/issues"
+
+[tool.setuptools]
+packages = ["opsmeter_sdk"]
