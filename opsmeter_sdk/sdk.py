@@ -124,7 +124,7 @@ def _same_config(a: _Config, b: _Config) -> bool:
 
 def _log_debug(*parts: Any) -> None:
     if _config and _config.debug:
-        print("[opsmeter-sdk]", *parts)
+        print("[opsmeter.io-sdk]", *parts)
 
 
 def _emit_result(result: Dict[str, Any], payload: Dict[str, Any]) -> None:
@@ -145,7 +145,7 @@ def _start_worker() -> None:
         return
 
     _worker_stop.clear()
-    _worker_thread = threading.Thread(target=_worker_loop, name="opsmeter-sdk-worker", daemon=True)
+    _worker_thread = threading.Thread(target=_worker_loop, name="opsmeter.io-sdk-worker", daemon=True)
     _worker_thread.start()
 
 

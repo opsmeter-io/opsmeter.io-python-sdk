@@ -1,10 +1,10 @@
-# opsmeter-sdk (Official opsmeter.io SDK)
+# opsmeter-io-sdk (Official opsmeter.io SDK)
 
-[![PyPI version](https://img.shields.io/pypi/v/opsmeter-sdk)](https://pypi.org/project/opsmeter-sdk/)
+[![PyPI version](https://img.shields.io/pypi/v/opsmeter-io-sdk)](https://pypi.org/project/opsmeter-io-sdk/)
 [![license](https://img.shields.io/github/license/opsmeter-io/opsmeter.io-python-sdk)](https://github.com/opsmeter-io/opsmeter.io-python-sdk/blob/main/LICENSE)
 
 Python SDK preview for Opsmeter auto-instrumentation.
-PyPI package: [opsmeter-sdk](https://pypi.org/project/opsmeter-sdk/)
+PyPI package: [opsmeter-io-sdk](https://pypi.org/project/opsmeter-io-sdk/)
 Integration examples: [opsmeter-integration-examples](https://github.com/opsmeter-io/opsmeter.io-integration-examples)
 Opsmeter site: [https://opsmeter.io](https://opsmeter.io)
 Official publisher identity: **opsmeter.io**.
@@ -33,7 +33,7 @@ Examples:
 ## Install
 
 ```bash
-pip install opsmeter-sdk openai
+pip install opsmeter-io-sdk openai
 # optional:
 # pip install anthropic
 ```

@@ -3,8 +3,8 @@ requires = ["setuptools>=68", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "opsmeter-sdk"
-version = "0.1.0b1"
+name = "opsmeter-io-sdk"
+version = "0.1.0b2"
 description = "Official opsmeter.io Python SDK: one-time init + request context auto-instrumentation"
 readme = "README.md"
 requires-python = ">=3.9"
