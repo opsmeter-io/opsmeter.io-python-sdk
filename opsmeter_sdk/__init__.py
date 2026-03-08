@@ -1,4 +1,7 @@
 from .sdk import (
+    capture_anthropic_message,
+    capture_anthropic_message_async,
+    capture_anthropic_message_with_result,
     capture_openai_chat_completion,
     capture_openai_chat_completion_async,
     capture_openai_chat_completion_with_result,
@@ -14,6 +17,9 @@ __all__ = [
     "init",
     "context",
     "get_context",
+    "capture_anthropic_message",
+    "capture_anthropic_message_with_result",
+    "capture_anthropic_message_async",
     "capture_openai_chat_completion",
     "capture_openai_chat_completion_with_result",
     "capture_openai_chat_completion_async",

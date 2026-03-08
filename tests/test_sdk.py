@@ -74,6 +74,67 @@ class PythonSdkTests(unittest.TestCase):
         self.assertTrue(result["telemetry"]["ok"])
         self.assertEqual(result["telemetry"]["status"], 204)
 
+    def test_capture_with_result_works_without_options(self):
+        opsmeter.init(api_key="key", enabled=False, environment="prod")
+
+        result = opsmeter.capture_openai_chat_completion_with_result(
+            lambda: {
+                "id": "req_2b",
+                "model": "gpt-4o-mini",
+                "usage": {
+                    "prompt_tokens": 2,
+                    "completion_tokens": 1,
+                    "total_tokens": 3,
+                },
+            }
+        )
+
+        self.assertEqual(result["payload"]["provider"], "openai")
+        self.assertEqual(result["payload"]["model"], "gpt-4o-mini")
+        self.assertEqual(result["telemetry"]["status"], 204)
+
+    def test_capture_with_result_honors_explicit_options(self):
+        opsmeter.init(api_key="key", enabled=False, environment="prod")
+
+        result = opsmeter.capture_openai_chat_completion_with_result(
+            lambda: {
+                "id": "req_2c",
+                "model": "gpt-4o-mini",
+                "usage": {
+                    "prompt_tokens": 4,
+                    "completion_tokens": 2,
+                    "total_tokens": 6,
+                },
+            },
+            request={"model": "gpt-4o-mini"},
+            external_request_id="ext_manual",
+            await_telemetry_response=True,
+        )
+
+        self.assertEqual(result["external_request_id"], "ext_manual")
+        self.assertEqual(result["payload"]["totalTokens"], 6)
+        self.assertEqual(result["telemetry"]["status"], 204)
+
+    def test_capture_anthropic_with_result_marks_provider(self):
+        opsmeter.init(api_key="key", enabled=False, environment="prod")
+
+        result = opsmeter.capture_anthropic_message_with_result(
+            lambda: {
+                "id": "msg_1",
+                "model": "claude-3-5-sonnet-20241022",
+                "usage": {
+                    "input_tokens": 11,
+                    "output_tokens": 6,
+                },
+            },
+            request={"model": "claude-3-5-sonnet-20241022"},
+            await_telemetry_response=True,
+        )
+
+        self.assertEqual(result["payload"]["provider"], "anthropic")
+        self.assertEqual(result["payload"]["totalTokens"], 17)
+        self.assertTrue(result["telemetry"]["ok"])
+
     def test_async_capture_with_result(self):
         opsmeter.init(api_key="key", enabled=False, environment="prod")
 

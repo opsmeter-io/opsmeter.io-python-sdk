@@ -61,6 +61,13 @@ def _normalize_data_mode(value: Optional[str]) -> str:
     return normalized
 
 
+def _normalize_provider(value: Optional[str]) -> str:
+    normalized = (value or "openai").strip().lower()
+    if normalized in {"openai", "anthropic"}:
+        return normalized
+    return "openai"
+
+
 def _read_int(config: Dict[str, Any], key: str, fallback: int, *, min_value: int = 0) -> int:
     raw = config.get(key, None)
     value = fallback if raw is None else int(raw)
@@ -217,6 +224,7 @@ def _extract_usage(response: Optional[Dict[str, Any]]) -> Dict[str, int]:
 
 def _build_payload(
     *,
+    provider: str,
     operation: str,
     request: Optional[Dict[str, Any]],
     response: Optional[Dict[str, Any]],
@@ -226,10 +234,11 @@ def _build_payload(
     ctx: Dict[str, Any],
 ) -> Dict[str, Any]:
     usage = _extract_usage(response)
+    safe_provider = _normalize_provider(provider)
 
     return {
         "externalRequestId": external_request_id,
-        "provider": "openai",
+        "provider": safe_provider,
         "model": (response or {}).get("model") or (request or {}).get("model") or "unknown",
         "promptVersion": ctx.get("prompt_version", "unknown"),
         "endpointTag": ctx.get("feature") or ctx.get("endpoint") or "sdk.unknown",
@@ -369,13 +378,15 @@ def flush(timeout_seconds: float = 5.0) -> None:
 
 def _build_capture_payload(
     *,
+    provider: str,
     request: Optional[Dict[str, Any]],
     operation: str,
     external_request_id: Optional[str],
 ) -> Dict[str, Any]:
     ctx = get_context()
+    safe_provider = _normalize_provider(provider)
     generated_ext = external_request_id or ctx.get("external_request_id") or _generate_external_request_id(
-        f"{operation}:{(request or {}).get('model', 'unknown')}:{time.time()}"
+        f"{safe_provider}:{operation}:{(request or {}).get('model', 'unknown')}:{time.time()}"
     )
     return {"ctx": ctx, "external_request_id": generated_ext}
 
@@ -396,17 +407,24 @@ def capture_openai_chat_completion(
     request: Optional[Dict[str, Any]] = None,
     operation: str = "chat.completions.create",
     external_request_id: Optional[str] = None,
+    provider: str = "openai",
 ) -> Any:
     if not callable(call):
         raise ValueError("call must be callable")
 
     start = time.time()
-    capture = _build_capture_payload(request=request, operation=operation, external_request_id=external_request_id)
+    capture = _build_capture_payload(
+        provider=provider,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+    )
 
     try:
         response_obj = call()
         response = response_obj.model_dump() if hasattr(response_obj, "model_dump") else response_obj
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=response if isinstance(response, dict) else None,
@@ -419,6 +437,7 @@ def capture_openai_chat_completion(
         return response_obj
     except BaseException as error:
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=None,
@@ -438,17 +457,24 @@ def capture_openai_chat_completion_with_result(
     operation: str = "chat.completions.create",
     external_request_id: Optional[str] = None,
     await_telemetry_response: bool = False,
+    provider: str = "openai",
 ) -> Dict[str, Any]:
     if not callable(call):
         raise ValueError("call must be callable")
 
     start = time.time()
-    capture = _build_capture_payload(request=request, operation=operation, external_request_id=external_request_id)
+    capture = _build_capture_payload(
+        provider=provider,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+    )
 
     try:
         response_obj = call()
         response = response_obj.model_dump() if hasattr(response_obj, "model_dump") else response_obj
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=response if isinstance(response, dict) else None,
@@ -466,6 +492,7 @@ def capture_openai_chat_completion_with_result(
         }
     except BaseException as error:
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=None,
@@ -485,17 +512,24 @@ async def capture_openai_chat_completion_async(
     operation: str = "chat.completions.create",
     external_request_id: Optional[str] = None,
     await_telemetry_response: bool = False,
+    provider: str = "openai",
 ) -> Dict[str, Any]:
     if not callable(call):
         raise ValueError("call must be callable")
 
     start = time.time()
-    capture = _build_capture_payload(request=request, operation=operation, external_request_id=external_request_id)
+    capture = _build_capture_payload(
+        provider=provider,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+    )
 
     try:
         response_obj = await call()
         response = response_obj.model_dump() if hasattr(response_obj, "model_dump") else response_obj
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=response if isinstance(response, dict) else None,
@@ -520,6 +554,7 @@ async def capture_openai_chat_completion_async(
         }
     except BaseException as error:
         payload = _build_payload(
+            provider=provider,
             operation=operation,
             request=request,
             response=None,
@@ -554,6 +589,58 @@ def patch_openai_client(client: Any, *, operation: str = "chat.completions.creat
     _patched.__opsmeter_patched__ = True
     client.chat.completions.create = _patched
     return {"patched": True}
+
+
+def capture_anthropic_message(
+    call: Callable[[], Any],
+    *,
+    request: Optional[Dict[str, Any]] = None,
+    operation: str = "messages.create",
+    external_request_id: Optional[str] = None,
+) -> Any:
+    return capture_openai_chat_completion(
+        call,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+        provider="anthropic",
+    )
+
+
+def capture_anthropic_message_with_result(
+    call: Callable[[], Any],
+    *,
+    request: Optional[Dict[str, Any]] = None,
+    operation: str = "messages.create",
+    external_request_id: Optional[str] = None,
+    await_telemetry_response: bool = False,
+) -> Dict[str, Any]:
+    return capture_openai_chat_completion_with_result(
+        call,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+        await_telemetry_response=await_telemetry_response,
+        provider="anthropic",
+    )
+
+
+async def capture_anthropic_message_async(
+    call: Callable[[], Any],
+    *,
+    request: Optional[Dict[str, Any]] = None,
+    operation: str = "messages.create",
+    external_request_id: Optional[str] = None,
+    await_telemetry_response: bool = False,
+) -> Dict[str, Any]:
+    return await capture_openai_chat_completion_async(
+        call,
+        request=request,
+        operation=operation,
+        external_request_id=external_request_id,
+        await_telemetry_response=await_telemetry_response,
+        provider="anthropic",
+    )
 
 
 def reset_for_tests() -> None:
